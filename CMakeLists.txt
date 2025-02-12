@@ -1,14 +1,15 @@
+
 # Устанавливаем минимальную версию CMake
 cmake_minimum_required(VERSION 3.10)
 
 # Указываем название проекта
-project(cell)
+project(3dGrafic)
 
 # Устанавливаем стандарт C++ для проекта
 set(CMAKE_CXX_STANDARD 17)
 
 # Указываем путь к папке с исходными файлами
-set(SOURCES main.cpp
+set(SOURCES main.cpp src/object.cpp src/move.cpp src/Brans-hatt.cpp
 )
 
 # Указываем пути к библиотекам SFML
