@@ -2,6 +2,7 @@
 #define BARNS_H
 
 
+// Структура Leaf хранит границы области и вектор объектов в этой области.
 struct Leaf {
     float minX;
     float minY;
@@ -18,20 +19,26 @@ public:
     Branch(int level, sf::RenderWindow& window, const Leaf& leaf);
     ~Branch() = default;
 
-    void FillOut();
-    void DrawLeaf(const Leaf& leaf);
-    
-private:
-    static constexpr int MaxDepth = 20; // Максимальная глубина рекурсии
-    int level;
-    Leaf myLeaf;
-    sf::RenderWindow& window;
+    // После построения эта ветвь содержит:
+    float totalMass;                            ///  ---> суммарная масса всех объектов в узле (либо суммарная масса дочерних узлов)
+    float centerX, centerY;                     ///  ---> координаты центра масс
 
-    // Эти вектора будут переданы в соответствующие квадранты (инициализированы пустыми)
-    std::vector<OBJ*> NWObj;
-    std::vector<OBJ*> NEObj;
-    std::vector<OBJ*> SWObj;
-    std::vector<OBJ*> SEObj;
+    // Указатели на дочерние ветви (если деление происходило)
+    Branch* NW_node = nullptr;
+    Branch* NE_node = nullptr;
+    Branch* SW_node = nullptr;
+    Branch* SE_node = nullptr;
+
+private:
+    static constexpr int MaxDepth = 20;         ///  ---> Максимальная глубина рекурсии
+    static constexpr size_t Threshold = 5;      ///  ---> Если объектов в Leaf меньше или равно порогу, считаем узел листом
+
+    int level;                                  ///  ---> Текущая глубина
+    Leaf myLeaf;                                ///  ---> Копия переданного листа (границы и объекты)
+    sf::RenderWindow& window;                   ///  ---> Ссылка на окно для отрисовки (для отладки)
+
+    void FillOut();                             ///  ---> Делит текущий Leaf на 4 квадранта и рекурсивно создаёт дочерние Branch
+    void DrawLeaf(const Leaf& leaf);            ///  ---> Отрисовывает границы Leaf (для визуализации)
 };
 
 #endif // BARNS_H

@@ -16,7 +16,7 @@ int main()
     // Создание объектов (например, кругов)
     std::vector<circle> circles;
     float minX = 90000, maxX = -100, minY = 90000, maxY = -100;
-    for (int i = 0; i < 3000; i++) {
+    for (int i = 0; i < 1000; i++) {
          float x = posXDist(gen);
          float y = posYDist(gen);
          float mass = massDist(gen);
@@ -53,10 +53,6 @@ int main()
          }
 
          window.clear(sf::Color::White);
-
-
-
-          // window.draw(BBox);
 
          // Сброс ускорения у каждого объекта
          for (auto& obj : objects) {
