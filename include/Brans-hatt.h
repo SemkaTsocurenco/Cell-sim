@@ -33,8 +33,8 @@ public:
 
 
 private:
-    static constexpr int MaxDepth = 20;         ///  ---> Максимальная глубина рекурсии
-    static constexpr size_t Threshold = 10;      ///  ---> Если объектов в Leaf меньше или равно порогу, считаем узел листом
+    static constexpr int MaxDepth = 30;         ///  ---> Максимальная глубина рекурсии
+    static constexpr size_t Threshold = 1;      ///  ---> Если объектов в Leaf меньше или равно порогу, считаем узел листом
 
     int level;                                  ///  ---> Текущая глубина
     sf::RenderWindow& window;                   ///  ---> Ссылка на окно для отрисовки (для отладки)

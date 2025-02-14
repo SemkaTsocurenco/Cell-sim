@@ -23,8 +23,8 @@ namespace {
     constexpr float kWindowWidth = 2000.0f;
     constexpr float kWindowHeight = 2000.0f;
     constexpr float kPI = 3.14159265f;
-    constexpr float theta = 0.5f;
-    constexpr float G = 10.0f;
+    constexpr float theta = 0.999f;
+    constexpr float G = 0.1;
 
     // Если отрисовка линий взаимодействия не нужна – отключаем на этапе компиляции:
     constexpr bool kDrawInteractionLines = false;

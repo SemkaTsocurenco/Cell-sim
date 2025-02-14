@@ -2,21 +2,27 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(2000, 2000), "Gravitational Interaction", sf::Style::Titlebar | sf::Style::Close);
-    window.setFramerateLimit(60); 
+    sf::RenderWindow window(sf::VideoMode(kWindowWidth, kWindowHeight), "Gravitational Interaction", sf::Style::Titlebar | sf::Style::Close);
+    window.setFramerateLimit(15); 
 
     // Инициализация генератора случайных чисел
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> posXDist(50, 1950);
-    std::uniform_real_distribution<float> posYDist(50, 1950);
-    std::uniform_real_distribution<float> massDist(10.0f, 100.0f);
-    std::uniform_real_distribution<float> radiusDist(1.0f, 1.0f);
+    float centerX = kWindowWidth * 0.5f;
+    float centerY = kWindowHeight * 0.5f;
+    // Стандартное отклонение (можно менять для более плотного/разрежённого скопления)
+    float stddevX = kWindowWidth / 6.0f;
+    float stddevY = kWindowHeight / 6.0f;
+
+    std::normal_distribution<float> posXDist(centerX, stddevX);
+    std::normal_distribution<float> posYDist(centerY, stddevY);
+    std::uniform_real_distribution<float> massDist(1.0f, 1000.0f);
+    std::uniform_real_distribution<float> radiusDist(1.0f, 3.0f);
 
     // Создание объектов 
     std::vector<circle> circles;
     float minX = 90000, maxX = -100, minY = 90000, maxY = -100;
-    for (int i = 0; i < 3000; i++) {
+    for (int i = 0; i < 10000; i++) {
          float x = posXDist(gen);
          float y = posYDist(gen);
          float mass = massDist(gen);
@@ -29,8 +35,8 @@ int main()
 
          int red = static_cast<int>(255 * (mass - massDist.a()) / (massDist.b() - massDist.a()));
          int green = static_cast<int>(255 * (massDist.b() - mass) / (massDist.b() - massDist.a()));
-         sf::Color color(red, 0, 0);
-         circles.emplace_back(std::make_pair(x-radius, y-radius), radius, color, mass, 0.8f , sf::Color::Red);
+         sf::Color color(red, red, red);
+         circles.emplace_back(std::make_pair(x-radius, y-radius), radius, color, mass, 0.0f , sf::Color::Red);
     }
 
 
@@ -55,7 +61,7 @@ int main()
                   window.close();
          }
 
-         window.clear(sf::Color::White);
+         window.clear(sf::Color::Black);
 
          // Сброс ускорения у каждого объекта
          for (auto& obj : objects) {

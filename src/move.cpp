@@ -37,10 +37,10 @@ void OBJ::updateVelocity(float dt) {
     const float posY = Possition.second;
     const float size = getMainSize();
 
-    if (posX > kWindowWidth - size || posX < size)
-        Velocity.first = -Velocity.first;
-    if (posY > kWindowHeight - size || posY < size)
-        Velocity.second = -Velocity.second;
+    // if (posX > kWindowWidth - size || posX < size)
+    //     Velocity.first = -Velocity.first;
+    // if (posY > kWindowHeight - size || posY < size)
+    //     Velocity.second = -Velocity.second;
 
     IncreaseVelocity(Acceleration.first * dt, Acceleration.second * dt);
 }
@@ -208,6 +208,7 @@ void movement::calculateReaction(Branch& node, OBJ& obj)
     float dx = obj.getPossition().first  - node.centerX;
     float dy = obj.getPossition().second - node.centerY;
     float distToObj = std::sqrt(dx*dx + dy*dy);
+    if (distToObj > 1.0f){
 
     // Если узел достаточно "далёк" => приближаем всю массу узла одной точкой
     if ((sizeQuadrant / distToObj) < theta) {
@@ -219,6 +220,7 @@ void movement::calculateReaction(Branch& node, OBJ& obj)
         if (node.NE_node) calculateReaction(*node.NE_node, obj);
         if (node.SW_node) calculateReaction(*node.SW_node, obj);
         if (node.SE_node) calculateReaction(*node.SE_node, obj);
+    }
     }
 }
 
