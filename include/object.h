@@ -1,4 +1,6 @@
 
+
+
 class OBJ 
 {
     private:
@@ -114,16 +116,3 @@ class circle : public OBJ
 };
 
 
-// Класс для обработки движений/взаимодействий
-class movement {
-    protected:
-        static void draw_relatives(const std::pair<float, float>& , const std::pair<float, float>& , float , sf::RenderWindow& );
-
-    public:
-        bool drawInteractionLines = true;
-
-        // Сделаем метод статическим и принимающим векторы указателей на OBJ
-        static void relate(std::vector<OBJ*>& , float , float , sf::RenderWindow& );
-        static void handleCollisions(std::vector<OBJ*>& , float , sf::RenderWindow& );
-        void update(std::vector<OBJ*>& , float );
-};

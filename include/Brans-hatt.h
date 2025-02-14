@@ -29,12 +29,14 @@ public:
     Branch* SW_node = nullptr;
     Branch* SE_node = nullptr;
 
+    Leaf myLeaf;                                ///  ---> Копия переданного листа (границы и объекты)
+
+
 private:
     static constexpr int MaxDepth = 20;         ///  ---> Максимальная глубина рекурсии
-    static constexpr size_t Threshold = 5;      ///  ---> Если объектов в Leaf меньше или равно порогу, считаем узел листом
+    static constexpr size_t Threshold = 10;      ///  ---> Если объектов в Leaf меньше или равно порогу, считаем узел листом
 
     int level;                                  ///  ---> Текущая глубина
-    Leaf myLeaf;                                ///  ---> Копия переданного листа (границы и объекты)
     sf::RenderWindow& window;                   ///  ---> Ссылка на окно для отрисовки (для отладки)
 
     void FillOut();                             ///  ---> Делит текущий Leaf на 4 квадранта и рекурсивно создаёт дочерние Branch

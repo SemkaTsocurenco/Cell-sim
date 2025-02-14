@@ -3,25 +3,28 @@
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(2000, 2000), "Gravitational Interaction", sf::Style::Titlebar | sf::Style::Close);
-    window.setFramerateLimit(60); // Повышенная частота кадров может обеспечить плавность
+    window.setFramerateLimit(60); 
 
     // Инициализация генератора случайных чисел
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> posXDist(50, 1950);
     std::uniform_real_distribution<float> posYDist(50, 1950);
-    std::uniform_real_distribution<float> massDist(300.0f, 1500.0f);
+    std::uniform_real_distribution<float> massDist(10.0f, 100.0f);
     std::uniform_real_distribution<float> radiusDist(1.0f, 1.0f);
 
-    // Создание объектов (например, кругов)
+    // Создание объектов 
     std::vector<circle> circles;
     float minX = 90000, maxX = -100, minY = 90000, maxY = -100;
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 3000; i++) {
          float x = posXDist(gen);
          float y = posYDist(gen);
          float mass = massDist(gen);
          float radius = radiusDist(gen);
-
+         minX = std::min(minX, x);
+         minY = std::min(minY, y);
+         maxX = std::max(maxX, x);
+         maxY = std::max(maxY, y);
 
 
          int red = static_cast<int>(255 * (mass - massDist.a()) / (massDist.b() - massDist.a()));
@@ -59,17 +62,22 @@ int main()
              obj->setAcceleration(0, 0);
          }
 
-               float minX = 99999;
-               float minY = 99999;
-               float maxX= -99999;
-               float maxY= -99999;
+
+
+         Leaf mainLeaf {minX, minY, maxX, maxY, objects};
+
+         Branch* Quadtree = new Branch(1, window, mainLeaf);
+         minX = 90000, maxX = -100, minY = 90000, maxY = -100;
+
+
 
      //     Вычисление гравитационного взаимодействия, обработка столкновений и обновление объектов
-         movement::relate(objects, 10.0f, dt, window);
+         movement::relate(objects, *Quadtree);
+         movement::update(objects, dt);
+
+
      //     movement::handleCollisions(objects, 0.5f, window);
           for (auto& obj : objects) {
-               obj->updateVelocity(dt);
-               obj->updatePosition(dt);
                float x = obj->getPossition().first;
                float y = obj->getPossition().second;
 
@@ -80,9 +88,7 @@ int main()
           }
 
 
-         Leaf mainLeaf {minX, minY, maxX, maxY, objects};
 
-         Branch(1, window, mainLeaf);
 
          // Отрисовка объектов
          for (auto& obj : objects) {

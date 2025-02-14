@@ -2,14 +2,6 @@
 #include <cmath>
 #include <algorithm>
 
-namespace {
-    constexpr float kWindowWidth = 2000.0f;
-    constexpr float kWindowHeight = 2000.0f;
-    constexpr float kPI = 3.14159265f;
-    // Если отрисовка линий взаимодействия не нужна – отключаем на этапе компиляции:
-    constexpr bool kDrawInteractionLines = false;
-}
-
 
 void OBJ::setVelocity(float x, float y) {
     Velocity.first  = x;
@@ -131,47 +123,116 @@ void movement::draw_relatives(const std::pair<float, float>& posI,
     window.draw(lines);
 }
 
-// Вычисление гравитационного взаимодействия между объектами.
-// Перебираются только пары (i, j) с i < j, что уменьшает число итераций в 2 раза.
-// Вместо деления на (distance*distance) и последующего деления на distance – используется обратная кубическая зависимость.
-void movement::relate(std::vector<OBJ*>& objects, float G, float dt, sf::RenderWindow& window) {
-    const size_t n = objects.size();
-    for (size_t i = 0; i < n; ++i) {
-        const float sizeI = objects[i]->getMainSize();
-        // Центр объекта i
-        const float posIX = objects[i]->getPossition().first ;
-        const float posIY = objects[i]->getPossition().second ;
-        for (size_t j = i + 1; j < n; ++j) {
-            const float sizeJ = objects[j]->getMainSize();
-            const float posJX = objects[j]->getPossition().first ;
-            const float posJY = objects[j]->getPossition().second ;
-            
-            const float dx = posJX - posIX;
-            const float dy = posJY - posIY;
-            float distSq = dx * dx + dy * dy;
 
-            const float minDist = sizeI + sizeJ;
-            const float minDistSq = minDist * minDist;
-            if (distSq < minDistSq)
-                distSq = minDistSq;
-            const float distance = std::sqrt(distSq);
-            if (distance > 50 ){
-            const float invDist = 1.0f / distance;
-            const float invDist3 = invDist * invDist * invDist;
+//-------------------------------------------------------------------------
+//    Для центра масс, если узел далеко.
+//-------------------------------------------------------------------------
 
-            // Гравитационная сила: F = G * m / (distance^2), а ускорение – F/distance,
-            // что эквивалентно G * m * dx / (distance^3)
-            const float force = G * objects[j]->getMass() * invDist3;
-            const float ax = force * dx;
-            const float ay = force * dy;
+void movement::addReactionFromNodeAsSingleMass(Branch& node, OBJ& obj)
+{
+    float objX = obj.getPossition().first;
+    float objY = obj.getPossition().second;
+    float dx = node.centerX - objX;
+    float dy = node.centerY - objY;
+    float distSq = dx*dx + dy*dy;
 
-            objects[i]->IncreaseAcceleration(ax, ay);
-            objects[j]->IncreaseAcceleration(-ax, -ay);
-            }
-            draw_relatives({ posIX, posIY }, { posJX, posJY }, distance, window);
+    float minDist = 2.0f * obj.getMainSize();  
+    float minDistSq = minDist * minDist;
+    if (distSq < minDistSq) {
+        distSq = minDistSq;
+    }
+    float dist = std::sqrt(distSq);
+    float invDist = 1.0f / dist;
+    float invDist3 = invDist * invDist * invDist;
+
+    float force = G * node.totalMass * invDist3;
+
+    float ax = force * dx;
+    float ay = force * dy;
+
+    obj.IncreaseAcceleration(ax, ay);
+}
+
+//-------------------------------------------------------------------------
+//    Если узел – лист, где хранится несколько объектов,
+//    можем сделать прямой перебор «объект-объект» (парное взаимодействие).
+//    Здесь допустим применять третий закон (добавлять +ax / -ax).
+//-------------------------------------------------------------------------
+void movement::addReactionLeafPairwise(Branch& node, OBJ& obj)
+{
+    auto& objectsInNode = node.myLeaf.objects;
+    for (auto* other : objectsInNode) {
+        if (other == &obj) {
+            continue; // не взаимодействуем объект сам с собой
         }
+
+        float dx = other->getPossition().first  - obj.getPossition().first;
+        float dy = other->getPossition().second - obj.getPossition().second;
+        float distSq = dx*dx + dy*dy;
+
+        // Минимальная дистанция — сумма радиусов (или размеров)
+        float minDist = other->getMainSize() + obj.getMainSize();
+        float minDistSq = minDist * minDist;
+        if (distSq < minDistSq) {
+            distSq = minDistSq;
+        }
+
+        float dist = std::sqrt(distSq);
+        float invDist = 1.0f / dist;
+        float invDist3 = invDist * invDist * invDist;
+
+        float force = G * other->getMass() * invDist3;
+        float ax = force * dx;
+        float ay = force * dy;
+
+        // Применяем силу и "третьим законом" обратно
+        obj.IncreaseAcceleration(ax, ay);
+        other->IncreaseAcceleration(-ax, -ay);
     }
 }
+
+
+void movement::calculateReaction(Branch& node, OBJ& obj)
+{
+    if (node.myLeaf.objects.empty()) {
+        return;
+    }
+
+    bool isLeaf = (!node.NW_node && !node.NE_node && !node.SW_node && !node.SE_node);
+    if (isLeaf && node.myLeaf.objects.size() > 1) {
+        addReactionLeafPairwise(node, obj);
+        return;
+    }
+
+    float sizeQuadrant = node.myLeaf.maxX - node.myLeaf.minX;
+    float dx = obj.getPossition().first  - node.centerX;
+    float dy = obj.getPossition().second - node.centerY;
+    float distToObj = std::sqrt(dx*dx + dy*dy);
+
+    // Если узел достаточно "далёк" => приближаем всю массу узла одной точкой
+    if ((sizeQuadrant / distToObj) < theta) {
+        addReactionFromNodeAsSingleMass(node, obj);
+
+    } else {
+        // Узел слишком близко => спускаемся к детям (если они есть)
+        if (node.NW_node) calculateReaction(*node.NW_node, obj);
+        if (node.NE_node) calculateReaction(*node.NE_node, obj);
+        if (node.SW_node) calculateReaction(*node.SW_node, obj);
+        if (node.SE_node) calculateReaction(*node.SE_node, obj);
+    }
+}
+
+
+void movement::relate(std::vector<OBJ*>& objects, Branch& root)
+{
+    // Для каждого объекта обнуляем ускорение и обходим дерево
+    for (auto* obj : objects) {
+        obj->setAcceleration(0.f, 0.f); 
+        calculateReaction(root, *obj);
+    }
+}
+
+
 
 // Обработка столкновений с использованием сравнения квадратов расстояний для избежания вызова std::sqrt.
 void movement::handleCollisions(std::vector<OBJ*>& objects, float restitution, sf::RenderWindow& window) {

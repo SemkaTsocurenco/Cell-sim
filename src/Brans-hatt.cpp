@@ -80,10 +80,10 @@ void Branch::FillOut() {
     Leaf SE(midX, midY, maxX, maxY, SEObjs);
 
     // Отрисовываем границы каждого квадранта (для отладки).
-    DrawLeaf(NW);
-    DrawLeaf(NE);
-    DrawLeaf(SW);
-    DrawLeaf(SE);
+    // DrawLeaf(NW);
+    // DrawLeaf(NE);
+    // DrawLeaf(SW);
+    // DrawLeaf(SE);
 
     // Рекурсивно создаём дочерние ветви, если количество объектов больше порога.
     if (NW.objects.size() > Threshold)
@@ -102,6 +102,26 @@ void Branch::FillOut() {
     float centerSW_x = 0.f, centerSW_y = 0.f;
     float centerSE_x = 0.f, centerSE_y = 0.f;
 
+
+    static sf::Font font;
+    static bool fontLoaded = false;
+    if (!fontLoaded) {
+        if (!font.loadFromFile("../res/KanitCyrillic.ttf")) {
+            // Можно добавить обработку ошибки, если шрифт не загрузился
+        }
+        fontLoaded = true;
+    }
+
+    // sf::Text totalMass_text;
+    // totalMass_text.setCharacterSize(10.0f);
+    // totalMass_text.setFillColor(sf::Color::Magenta);
+    // totalMass_text.setFont(font);
+    // sf::CircleShape centerMass_draw;
+    // centerMass_draw.setFillColor(sf::Color::Blue);
+    // centerMass_draw.setRadius(5.0f);
+
+
+
     // Для каждого квадранта: если дочерняя ветвь создана – используем её данные,
     // иначе суммируем объекты из соответствующего Leaf.
     if (NW_node) {
@@ -119,6 +139,12 @@ void Branch::FillOut() {
             centerNW_x /= massNW;
             centerNW_y /= massNW;
         }
+
+        // totalMass_text.setPosition(minX, minY);
+        // totalMass_text.setString(std::to_string(static_cast<int>(massNW)));
+        // window.draw(totalMass_text);
+        // centerMass_draw.setPosition( centerNW_x - 5.0f ,centerNW_y - 5.0f );
+        // window.draw(centerMass_draw);
     }
     if (NE_node) {
         massNE = NE_node->totalMass;
@@ -135,6 +161,12 @@ void Branch::FillOut() {
             centerNE_x /= massNE;
             centerNE_y /= massNE;
         }
+
+        // totalMass_text.setPosition(midX, minY);
+        // totalMass_text.setString(std::to_string(static_cast<int>(massNE)));
+        // window.draw(totalMass_text);
+        // centerMass_draw.setPosition( centerNE_x - 5.0f ,centerNE_y - 5.0f );
+        // window.draw(centerMass_draw);
     }
     if (SW_node) {
         massSW = SW_node->totalMass;
@@ -151,6 +183,11 @@ void Branch::FillOut() {
             centerSW_x /= massSW;
             centerSW_y /= massSW;
         }
+            // totalMass_text.setPosition(minX, midY);
+            // totalMass_text.setString(std::to_string(static_cast<int>(massSW)));
+            // window.draw(totalMass_text);
+            // centerMass_draw.setPosition( centerSW_x - 5.0f ,centerSW_y - 5.0f );
+            // window.draw(centerMass_draw);
     }
     if (SE_node) {
         massSE = SE_node->totalMass;
@@ -167,6 +204,12 @@ void Branch::FillOut() {
             centerSE_x /= massSE;
             centerSE_y /= massSE;
         }
+
+        // totalMass_text.setPosition(midX, midY);
+        // totalMass_text.setString(std::to_string(static_cast<int>(massSE)));
+        // window.draw(totalMass_text);
+        // centerMass_draw.setPosition( centerSE_x - 5.0f ,centerSE_y - 5.0f );
+        // window.draw(centerMass_draw);
     }
 
     totalMass = massNW + massNE + massSW + massSE;
@@ -179,6 +222,13 @@ void Branch::FillOut() {
         centerX = (minX + maxX) / 2.0f;
         centerY = (minY + maxY) / 2.0f;
     }
+
+
+
+
+
+
+
 
 }
 
