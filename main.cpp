@@ -3,8 +3,10 @@
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(kWindowWidth, kWindowHeight), "Gravitational Interaction", sf::Style::Titlebar | sf::Style::Close);
-    window.setFramerateLimit(15); 
-
+    window.setFramerateLimit(30); 
+     sf::View view(sf::FloatRect(0, 0, kWindowWidth, kWindowHeight));
+    window.setView(view);
+    window.setVerticalSyncEnabled(true); 
     // Инициализация генератора случайных чисел
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -41,6 +43,7 @@ int main()
 
 
      std::vector<OBJ*> objects;
+     sf::Vector2i BufPosMouse;
 
 
 
@@ -57,8 +60,39 @@ int main()
          sf::Event event;
          while (window.pollEvent(event))
          {
-              if (event.type == sf::Event::Closed)
+              if (event.type == sf::Event::Closed || event.key.code == sf::Keyboard::Escape){
                   window.close();
+              }
+
+              if (event.type == sf::Event::MouseWheelScrolled){
+                    if (event.mouseWheelScroll.delta > 0) {
+                         view.zoom(0.9);
+                    } else { 
+                         view.zoom(1.1);
+                    }  
+              }
+
+          auto posWindow = window.getPosition();
+          auto posMouse = sf::Mouse::getPosition();
+               if (event.type == sf::Event::MouseButtonPressed){
+                    BufPosMouse = sf::Mouse::getPosition();
+               }
+
+
+          if (event.type == sf::Event::MouseMoved)
+
+               if (sf::Mouse::isButtonPressed(sf::Mouse::Left)){
+                    if (posMouse.x > posWindow.x && posMouse.x < kWindowWidth + posWindow.x && 
+                         posMouse.y > posWindow.y && posMouse.y < kWindowHeight + posWindow.y){
+                              if (BufPosMouse != posMouse){
+                              view.move({ BufPosMouse.x - posMouse.x , BufPosMouse.y - posMouse.y });
+                              BufPosMouse = posMouse;
+                              }
+                         }
+               }
+               BufPosMouse = posMouse;
+
+
          }
 
          window.clear(sf::Color::Black);
@@ -74,6 +108,19 @@ int main()
 
          Branch* Quadtree = new Branch(1, window, mainLeaf);
          minX = 90000, maxX = -100, minY = 90000, maxY = -100;
+
+
+
+          // sf::Mouse::setPosition({ window.getPosition().x + (kWindowWidth/2),  window.getPosition().y + (kWindowHeight/2)});
+        
+
+
+
+
+
+
+
+
 
 
 
@@ -93,13 +140,14 @@ int main()
                maxY = std::max(maxY, y);
           }
 
-
+          window.setView(view);
 
 
          // Отрисовка объектов
          for (auto& obj : objects) {
               obj->draw(window);
          }
+
 
          window.display();
          

@@ -208,7 +208,7 @@ void movement::calculateReaction(Branch& node, OBJ& obj)
     float dx = obj.getPossition().first  - node.centerX;
     float dy = obj.getPossition().second - node.centerY;
     float distToObj = std::sqrt(dx*dx + dy*dy);
-    if (distToObj > 1.0f){
+    if (distToObj > 50.0f){
 
     // Если узел достаточно "далёк" => приближаем всю массу узла одной точкой
     if ((sizeQuadrant / distToObj) < theta) {
